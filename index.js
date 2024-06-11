@@ -1,8 +1,7 @@
 #!/usr/bin/env node
 require('dotenv').config();
 const fs = require('fs');
-const https = require('https');
-const cors = require('cors');
+const swaggerUi = require('swagger-ui-express');
 
 const credentials = {
 	key: fs.readFileSync('./https/privkey.pem'),
@@ -14,7 +13,7 @@ const app = express();
 app.use(express.json());
 
 if (process.env.Environment === 'dev') {
-	const expressSwagger = require('skarn-swagger')(app);
+	const expressSwagger = require('talec-swagger')(app);
 	const outputFile = 'c:/swag/swagger.json';
 
 	const options = {
@@ -22,7 +21,7 @@ if (process.env.Environment === 'dev') {
 			info: {
 				description: 'This is swagger Radioplayer API backend used to get services data, and send message.',
 				title: 'Swagger Radioplayer API',
-				version: '1.0.0',
+				version: '1.0.2',
 			},
 			servers: [
 				{ url: 'https://betaapi.radioplayer.fr/v2', description: 'dev' },
@@ -39,30 +38,22 @@ if (process.env.Environment === 'dev') {
 			},
 		},
 		basedir: __dirname,
-		files: ['./models/**/*.js', './responses/**/*.js', './routes/**/*.js'], //Path to the API handle folder
+		files: [ './routes/**/*.js'], //Path to the API handle folder
 		responseFormats: ['application/json'],
-
+		route: {
+			url: '/api-docs',
+			docs: '/api-docs.json',
+		},
 	};
-	expressSwagger(options,outputFile);
+	const swaggerDocument = expressSwagger(options, outputFile);
+
+	app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 }
-
-const Enum = require('./enum');
-
-Enum.Authorization = Enum.Authorization.map((x) => 'Basic ' + Buffer.from(x).toString('base64'));
-
-app.use(cors());
-app.use((req, res, next) => {
-	if (Enum.Authorization.includes(req.headers.authorization)) {
-		next();
-	} else {
-		res.status(401).send();
-	}
-});
 
 app.get('/', function (req, res) {
 	res.end();
 });
 
-const httpsServer = https.createServer(credentials, app);
-httpsServer.listen(443);
-console.log('Le server REST démarre sur le port 443.');
+const httpServer = app.listen(80, () => {
+	console.log('Le serveur REST démarre sur le port 80.');
+});

@@ -8,7 +8,7 @@
  * @property {string} link.required - Outside link - eg: https://...
  */
 class BddArticle {
-	/**
+	/*
 	 * @param {object} data.required - direct DB articles response item
 	 */
 	constructor(data) {

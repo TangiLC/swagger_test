@@ -1,9 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { query, param } = require('express-validator');
-
 const RadiosC = require('../controllers/radios_c');
-
 const tools = require('../tools');
 
 /**
